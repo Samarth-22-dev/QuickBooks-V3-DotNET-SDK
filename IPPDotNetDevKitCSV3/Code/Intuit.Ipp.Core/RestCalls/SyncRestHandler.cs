@@ -44,6 +44,12 @@ namespace Intuit.Ipp.Core.Rest
         private ServiceContext context;
 
         /// <summary>
+        /// intuit_tid from the response of the call currently in progress.
+        /// Sole purpose is to populate exceptions built outside ParseResponse.
+        /// </summary>
+        private string currentCallIntuitTid;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncRestHandler"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -99,6 +105,7 @@ namespace Intuit.Ipp.Core.Rest
         /// <returns>Response from REST service.</returns>
         public override string GetResponse(HttpWebRequest request)
         {
+            this.currentCallIntuitTid = null;
             FaultHandler handler = new FaultHandler(this.context);
 
             // Create a variable for storing the response.
@@ -194,6 +201,7 @@ namespace Intuit.Ipp.Core.Rest
                 IdsException exception = handler.ParseErrorResponseAndPrepareException(response);
                 if (exception != null)
                 {
+                    exception.Intuit_Tid = this.currentCallIntuitTid;
                     throw exception;
                 }
             }
@@ -383,6 +391,7 @@ namespace Intuit.Ipp.Core.Rest
                 //Log to Serilog
                 CoreHelper.AdvancedLogging.Log(" Response Intuit_Tid header: " + response_intuit_tid_header + ", Response Payload: " + response);
 
+                this.currentCallIntuitTid = response_intuit_tid_header;
 
             }
 

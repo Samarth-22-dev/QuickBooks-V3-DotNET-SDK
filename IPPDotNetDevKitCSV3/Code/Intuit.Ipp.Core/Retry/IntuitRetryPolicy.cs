@@ -352,6 +352,7 @@ namespace Intuit.Ipp.Core
 
                                     
                                     string errorString = string.Empty;
+                                    string response_intuit_tid_header = "";   // hoisted so it is in scope below
                                     if (webException != null)
                                     {
 
@@ -399,7 +400,6 @@ namespace Intuit.Ipp.Core
                                                 reader.Close();
                                             }
                                         }
-                                            string response_intuit_tid_header = "";
                                             //get intuit_tid header
                                             for (int i = 0; i < errorResponse.Headers.Count; ++i)
                                             {
@@ -425,12 +425,17 @@ namespace Intuit.Ipp.Core
 
                                     if (idsException != null)
                                     {
-                                        faultHandler(new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, idsException));
+                                        idsException.Intuit_Tid = response_intuit_tid_header;
+                                        RetryExceededException rex = new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, idsException);
+                                        rex.Intuit_Tid = response_intuit_tid_header;
+                                        faultHandler(rex);
                                         return false;
                                     }
                                     else if(webException != null)
                                     {
-                                        faultHandler(new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, webException));
+                                        RetryExceededException rex = new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, webException);
+                                        rex.Intuit_Tid = response_intuit_tid_header;
+                                        faultHandler(rex);
                                         return false;
                                     }
 
@@ -568,6 +573,7 @@ namespace Intuit.Ipp.Core
 
                       
                         string errorString = string.Empty;
+                        string response_intuit_tid_header = "";   // hoisted so it is in scope below
 
                     if (webException != null)
                     {
@@ -617,7 +623,6 @@ namespace Intuit.Ipp.Core
                             }
 
                                 // Log the error string to disk.
-                                string response_intuit_tid_header = "";
                                 //get intuit_tid header
                                 for (int i = 0; i < errorResponse.Headers.Count; ++i)
                                 {
@@ -643,11 +648,16 @@ namespace Intuit.Ipp.Core
 
                         if (idsException != null)
                         {
-                            throw new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, idsException);
+                            idsException.Intuit_Tid = response_intuit_tid_header;
+                            RetryExceededException rex = new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, idsException);
+                            rex.Intuit_Tid = response_intuit_tid_header;
+                            throw rex;
                         }
                         else if(webException != null)
                         {
-                            throw new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, webException);
+                            RetryExceededException rex = new RetryExceededException(webException.Message, webException.Status.ToString(), webException.Source, webException);
+                            rex.Intuit_Tid = response_intuit_tid_header;
+                            throw rex;
                         }
 
                         throw new RetryExceededException(ex.Message, ex);

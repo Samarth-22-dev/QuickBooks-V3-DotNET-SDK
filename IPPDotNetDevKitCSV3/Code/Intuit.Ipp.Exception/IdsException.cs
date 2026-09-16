@@ -57,6 +57,11 @@ namespace Intuit.Ipp.Exception
         private IList<IdsError> innerExceptions;
 
         /// <summary>
+        /// Intuit transaction id (intuit_tid) from the response header.
+        /// </summary>
+        private string intuitTid;
+
+        /// <summary>
         /// Initializes a new instance of the IdsException class.
         /// </summary>
         public IdsException()
@@ -214,6 +219,14 @@ namespace Intuit.Ipp.Exception
                 catch (System.InvalidCastException)
                 {
                 }
+
+                try
+                {
+                    this.intuitTid = info.GetString("intuitTid");
+                }
+                catch (System.Runtime.Serialization.SerializationException)
+                {
+                }
             }
         }
 
@@ -231,6 +244,15 @@ namespace Intuit.Ipp.Exception
             {
                 this.errorCode = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the Intuit transaction id (intuit_tid) associated with the response.
+        /// </summary>
+        public string Intuit_Tid
+        {
+            get { return this.intuitTid; }
+            set { this.intuitTid = value; }
         }
 
         /// <summary>
@@ -299,6 +321,7 @@ namespace Intuit.Ipp.Exception
                 info.AddValue("source", this.source);
                 info.AddValue("innerException", this.innerException);
                 info.AddValue("innerExceptions", this.innerExceptions);
+                info.AddValue("intuitTid", this.intuitTid);
             }
         }
     }

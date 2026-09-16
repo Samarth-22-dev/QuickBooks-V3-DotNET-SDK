@@ -108,5 +108,40 @@ namespace Intuit.Ipp.Core.Test
             Assert.AreEqual(DataCompressionFormat.GZip.ToString().ToLowerInvariant(), request.Headers[CoreConstants.CONTENTENCODING]);
             Assert.AreEqual(DataCompressionFormat.GZip.ToString().ToLowerInvariant(), request.Headers[CoreConstants.ACCEPTENCODING]);
         }
+
+        /// <summary>
+        /// A caller supplied TrackingID is sent as the intuit_tid request header.
+        /// </summary>
+        [TestMethod]
+        public void PrepareRequestTrackingIdSetsIntuitTidHeaderTest()
+        {
+            ServiceContext serviceContext = new ServiceContext("1234567890", IntuitServicesType.QBO, new OAuth2RequestValidator("dummyaccesstoken"));
+            Guid trackingId = Guid.NewGuid();
+            serviceContext.TrackingID = trackingId;
+            IRestHandler handler = new SyncRestHandler(serviceContext);
+            string resourceUri = string.Format("v3/company/{0}/customer", serviceContext.RealmId);
+            RequestParameters parameters = new RequestParameters(resourceUri, HttpVerbType.POST, CoreConstants.CONTENTTYPE_APPLICATIONJSON);
+
+            HttpWebRequest request = handler.PrepareRequest(parameters, null);
+
+            Assert.AreEqual(trackingId.ToString(), request.Headers["intuit_tid"]);
+        }
+
+        /// <summary>
+        /// No intuit_tid request header is added when TrackingID is not set.
+        /// </summary>
+        [TestMethod]
+        public void PrepareRequestNoTrackingIdNoIntuitTidHeaderTest()
+        {
+            ServiceContext serviceContext = new ServiceContext("1234567890", IntuitServicesType.QBO, new OAuth2RequestValidator("dummyaccesstoken"));
+            IRestHandler handler = new SyncRestHandler(serviceContext);
+            string resourceUri = string.Format("v3/company/{0}/customer", serviceContext.RealmId);
+            RequestParameters parameters = new RequestParameters(resourceUri, HttpVerbType.POST, CoreConstants.CONTENTTYPE_APPLICATIONJSON);
+
+            HttpWebRequest request = handler.PrepareRequest(parameters, null);
+
+            Assert.IsNull(serviceContext.TrackingID);
+            Assert.IsNull(request.Headers["intuit_tid"]);
+        }
     }
 }

@@ -481,6 +481,7 @@ namespace Intuit.Ipp.Core.Rest
                         IdsException idsException = handler.ParseErrorResponseAndPrepareException(resultString);
                         if (idsException != null)
                         {
+                            idsException.Intuit_Tid = response_intuit_tid_header;
                             this.context.IppConfiguration.Logger.CustomLogger.Log(TraceLevel.Error, idsException.ToString());
                             CoreHelper.AdvancedLogging.Log(idsException.ToString());
                             resultArguments = new AsyncCallCompletedEventArgs(null, idsException);

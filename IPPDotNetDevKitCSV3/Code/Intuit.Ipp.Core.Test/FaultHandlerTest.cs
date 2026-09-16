@@ -4,6 +4,7 @@ using System;
 using Intuit.Ipp.Core;
 using Intuit.Ipp.Data;
 using Intuit.Ipp.Exception;
+using Intuit.Ipp.Security;
 using System.Net;
 using System.Collections.Generic;
 
@@ -198,5 +199,47 @@ namespace Intuit.Ipp.Core.Test
         //}
 
        
+        /// <summary>
+        /// A test for the intuit_tid carried on an exception built from a fault payload.
+        /// This is the HTTP 200 with embedded Fault shape handled by SyncRestHandler and AsyncRestHandler.
+        /// </summary>
+        [TestMethod()]
+        public void ParseErrorResponseAndPrepareExceptionCarriesIntuitTidTest()
+        {
+            ServiceContext serviceContext = new ServiceContext("1234567890", IntuitServicesType.QBO, new OAuth2RequestValidator("dummyaccesstoken"));
+            FaultHandler target = new FaultHandler(serviceContext);
+            string faultResponse = "{\"Fault\":{\"Error\":[{\"Message\":\"Object Not Found\",\"Detail\":\"Object Not Found : Something went wrong\",\"code\":\"610\",\"element\":\"\"}],\"type\":\"ValidationFault\"},\"time\":\"2026-01-01T00:00:00.000-08:00\"}";
+
+            IdsException actual = target.ParseErrorResponseAndPrepareException(faultResponse);
+
+            Assert.IsNotNull(actual);
+            Assert.IsInstanceOfType(actual, typeof(ValidationException));
+            Assert.IsNull(actual.Intuit_Tid);
+
+            string intuitTid = "1-5f8c0d2e-abcdef1234567890";
+            actual.Intuit_Tid = intuitTid;
+            Assert.AreEqual(intuitTid, actual.Intuit_Tid);
+        }
+
+        /// <summary>
+        /// A test that the single Intuit_Tid property on IdsException covers the derived SDK exceptions.
+        /// </summary>
+        [TestMethod()]
+        public void IntuitTidIsAvailableOnDerivedExceptionsTest()
+        {
+            string intuitTid = "1-5f8c0d2e-abcdef1234567890";
+
+            IdsException idsException = new IdsException("error");
+            idsException.Intuit_Tid = intuitTid;
+            Assert.AreEqual(intuitTid, idsException.Intuit_Tid);
+
+            RetryExceededException retryExceededException = new RetryExceededException("error");
+            retryExceededException.Intuit_Tid = intuitTid;
+            Assert.AreEqual(intuitTid, retryExceededException.Intuit_Tid);
+
+            InvalidTokenException invalidTokenException = new InvalidTokenException("error");
+            invalidTokenException.Intuit_Tid = intuitTid;
+            Assert.AreEqual(intuitTid, invalidTokenException.Intuit_Tid);
+        }
     }
 }
