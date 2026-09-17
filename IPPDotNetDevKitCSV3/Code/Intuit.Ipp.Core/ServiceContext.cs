@@ -303,6 +303,13 @@ namespace Intuit.Ipp.Core
         }
 
         /// <summary>
+        /// Gets or sets a caller-supplied tracking id, sent as the intuit_tid request header.
+        /// Useful for correlating calls that time out with no response.
+        /// Mirrors Context.setTrackingID in the Java SDK.
+        /// </summary>
+        public Guid? TrackingID { get; set; }
+
+        /// <summary>
         /// timeout param to be passed to services.  To setup the ReadWriteTimeout property in HttpWebRequest.
         /// It is only for sync web requests. If not set, the default timeout will be used.
         /// </summary>

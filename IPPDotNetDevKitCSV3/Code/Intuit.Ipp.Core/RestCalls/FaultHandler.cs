@@ -138,6 +138,7 @@ namespace Intuit.Ipp.Core.Rest
                     if (isIps)
                     {
                         IdsException exception = new IdsException(errorString, statusCode.ToString(CultureInfo.InvariantCulture), webException.Source);
+                        exception.Intuit_Tid = response_intuit_tid_header;
                         this.context.IppConfiguration.Logger.CustomLogger.Log(TraceLevel.Error, exception.ToString());
                         //CoreHelper.AdvancedLogging.Log(idsException.ToString());
                         return exception;
@@ -191,6 +192,11 @@ namespace Intuit.Ipp.Core.Rest
                             // idsException = new IdsException(errorString, statusCode.ToString(CultureInfo.InvariantCulture), webException.Source);
                             idsException = new IdsException(statusCodeDescription, statusCode.ToString(CultureInfo.InvariantCulture), webException.Source);
                             break;
+                    }
+
+                    if (idsException != null)
+                    {
+                        idsException.Intuit_Tid = response_intuit_tid_header;
                     }
                 }
             }

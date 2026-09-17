@@ -89,6 +89,34 @@ The code has been divided into following main categories-
 * **InvalidTokenException** - This exception is thrown when your OAuth2 token has expired or is invalid. You will need to regenerate a new token by doing OAuth2 again or renew you tokens if they are still valid.
 
 
+## Getting the intuit_tid for support
+
+Intuit uses the `intuit_tid` response header to trace an API call. The SDK exposes it directly, so you no longer need to enable full request/response payload logging and parse it back out of the logs.
+
+* **On errors - no setup needed** - every exception thrown by the SDK derives from `IdsException`, which carries the `intuit_tid` of the response -
+
+            try
+            {
+                Customer added = dataService.Add(customer);
+            }
+            catch (IdsException ex)
+            {
+                Console.WriteLine("intuit_tid: " + ex.Intuit_Tid);
+            }
+
+    This works out of the box, with no configuration, for all the exception types listed above - including `ValidationException`, `ServiceException`, `SecurityException`, `InvalidTokenException` and `RetryExceededException`.
+
+* **On timeouts - supply your own id** - if a call times out there is no response at all, so there is no `intuit_tid` to return and `Intuit_Tid` on the exception will be empty. To have an id in that case, set one before making the call and the SDK will send it to Intuit as the `intuit_tid` request header -
+
+            ServiceContext context = new ServiceContext(realmId, IntuitServicesType.QBO, oauthValidator);
+            context.TrackingID = Guid.NewGuid();
+
+            // make the call as usual, and keep the value of context.TrackingID in your own logs
+
+    Intuit adopts your value as the `intuit_tid` for that request, so `Intuit_Tid` on the exception will return your id rather than an Intuit generated one. Both are equally traceable by Intuit support.
+
+* **Which one to use** - leave `TrackingID` unset unless you specifically need to trace calls that may time out. With it unset you get Intuit's own `intuit_tid` on every error, which covers the majority of cases.
+
 ## Enabling logs for the SDK
 Logs help you in easliy identifying detailed issues with your payload, get more info in the exception details for fixing them.
 * New logging support was added to the SDK which includes support for reporting headers and multiple logging sinks available from Serilog. You can chooise to have either one or more of these logging sinks enabled. -

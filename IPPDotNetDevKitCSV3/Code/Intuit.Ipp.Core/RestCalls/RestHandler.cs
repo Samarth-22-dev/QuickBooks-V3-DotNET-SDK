@@ -222,6 +222,11 @@ namespace Intuit.Ipp.Core.Rest
                 httpWebRequest.Headers.Add(CoreConstants.ACCEPTENCODING, this.ResponseCompressor.DataCompressionFormat.ToString().ToLowerInvariant());
             }
 
+            if (this.serviceContext.TrackingID.HasValue)
+            {
+                httpWebRequest.Headers.Add("intuit_tid", this.serviceContext.TrackingID.Value.ToString());
+            }
+
             // This indicates whether a sync call or an async call is to be made. For an async call
             // the GetRequestStream is an async call so do not call it here.
             if (this.IsSyncRequestStream)
